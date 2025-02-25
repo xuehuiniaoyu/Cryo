@@ -40,21 +40,21 @@ buildZipToPluginDownloadFile 编译后将文件发送到插件下载目录（需
 注意：插件包编译完成后成以下结构：
  ```
  build
- 	cryo
-		dex
-			classes.dex
-		hash
-			md5.txt
-			sha256.txt
-		libs
-			main.jar
-		target
-			zip
-				plugin1.zip
-			plugin.conf
-			source.dex
-		build.sh
-		plugin.conf
+   cryo
+     dex
+       classes.dex
+     hash
+       md5.txt
+       sha256.txt
+     libs
+       main.jar
+     target
+       zip
+         plugin1.zip
+       plugin.conf
+       source.dex
+      build.sh
+      plugin.conf
  ```
 build/cryo/target/xxx.zip 为插件包，可用CyInstaller安装
 build/cryo/hash/sha256.txt 是插件包的唯一证书，用于校验
