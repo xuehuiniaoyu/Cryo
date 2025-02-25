@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+    alias(libs.plugins.jetbrainsKotlinJvm)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+task createJar(type: Jar) {
+    archiveBaseName = 'annotation' // JAR 包的名字
+    from sourceSets.main.output // 包含编译后的 class 文件
+}
+
+artifacts {
+    archives createJar
+}

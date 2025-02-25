@@ -1,0 +1,215 @@
+apply from: '../scripts/build_config.gradle'
+android {
+    namespace 'com.cryo.common'
+    compileSdk 34
+    defaultConfig {
+        minSdk 26
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+dependencies {
+    // 1.引入依赖
+//    debugCompileOnly files("$rootDir/libs/core-debug.aar")
+//    releaseCompileOnly files("$rootDir/libs/core-release.aar")
+    implementation project(":core")
+
+    // 2.kapt注解生成器
+//    api files("$rootDir/libs/annotation.jar")
+//    kapt files("$rootDir/libs/compiler.jar")
+    implementation project(":annotation")
+    kapt project(":compiler")
+
+    // 3.添加依赖库
+    implementation 'org.hjson:hjson:3.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+}
+def thirdParty = []
+task buildDex(type: Jar, dependsOn: ['assembleDebug']) {
+    archiveFileName = 'main.jar'
+    from("build/tmp/kotlin-classes/debug")
+    doLast {
+        copy {
+            from 'build/libs/main.jar'
+            into 'build/cryo/libs'
+        }
+    }
+
+    doLast {
+        println("Copy classes.jar..")
+        copy {
+            from "src/main/assets/plugin.conf"
+            into 'build/cryo/'
+        }
+    }
+
+//    doLast {
+//        println("拷贝so库")
+//        File jniLibs = new File(rootDir, "app/jniLibs")
+//        if(jniLibs.exists()) {
+//            copy {
+//                from jniLibs.name
+//                into 'build/cryo/target/libs'
+//            }
+//        }
+//    }
+
+    // 准备打包
+    doLast {
+        println("准备打包..")
+        StringBuffer sb = new StringBuffer('#!/bin/bash').append("\n")
+        sb.append('source ~/.bash_profile').append("\n")
+        sb.append('# 确保当前目录有效').append("\n")
+        sb.append('if ! cd "$(dirname "$0")"; then').append("\n")
+        sb.append('echo "无法切换到脚本所在目录"').append("\n")
+        sb.append('exit 1').append("\n")
+        sb.append('fi').append("\n")
+
+        sb.append('# 创建输出目录').append("\n")
+        sb.append('mkdir -p dex').append("\n")
+//        sb.append("dx --min-sdk-version=26 --dex --output=new/base.dex ").append("libs/main.jar ")
+        sb.append("d8 --release --min-api 26 --output dex/ ").append("libs/main.jar ")
+        if (!thirdParty.isEmpty()) {
+            sb.append("libs/").append(thirdParty.join(";").replace(";", ".jar libs/")).append(".jar")
+        }
+        File shFile = new File(buildDir, "cryo/build.sh")
+        if (!shFile.exists()) {
+            println("不存在的文件：$shFile")
+            shFile.createNewFile()
+        }
+        PrintWriter out = new PrintWriter(new FileOutputStream(shFile))
+        out.println(sb.toString())
+        out.flush()
+        out.close()
+        String command = "sh ./build.sh"
+        println("command=$command")
+        exec {
+            workingDir 'build/cryo'
+            commandLine 'sh', '-c', command
+        }
+        println("打包完成！")
+    }
+
+    doLast {
+        println("拷贝dex..")
+        copy {
+            from 'build/cryo/dex/classes.dex'
+            into 'build/cryo/target'
+            rename('classes.dex', 'source.dex')
+        }
+        copy {
+            from 'build/cryo/plugin.conf'
+            into 'build/cryo/target'
+        }
+        println("拷贝资源..")
+        copy {
+            from 'src/main/res'
+            into 'build/cryo/target/res'
+            include '**/*'
+        }
+    }
+
+    doLast {
+        def file = file("build/cryo/dex/classes.dex")
+        if (file.exists()) {
+            def md5 = calculateMD5(file)
+            println "文件 ${file.name} 的 MD5 值是: $md5"
+            File md5File = new File("build/cryo/hash/md5.txt")
+            if(!md5File.parentFile.exists()) {
+                md5File.parentFile.mkdirs()
+            }
+            md5File.text = md5.toString()
+        } else {
+            println "文件不存在: ${file.absolutePath}"
+        }
+    }
+
+    doLast {
+        def file = file("build/cryo/dex/classes.dex")
+        if (file.exists()) {
+            def sha256 = calculateSHA256(file)
+            println "文件 ${file.name} 的 SHA-256 值是: $sha256"
+            File sha256File = new File("build/cryo/hash/sha256.txt")
+            if(!sha256File.parentFile.exists()) {
+                sha256File.parentFile.mkdirs()
+            }
+            sha256File.text = sha256.toString()
+        } else {
+            println "文件不存在: ${file.absolutePath}"
+        }
+    }
+}
+
+task buildZip(type: Zip, dependsOn: ['buildDex']) {
+    archiveFileName = "${project.name}.zip"
+    destinationDirectory = file('build/cryo/target/zip')
+    from('build/cryo/target')
+    exclude '**/zip'
+}
+
+// 编译插件zip到assets
+task buildZipToAssets(dependsOn: ['buildZip']) {
+    doLast {
+        println('拷贝到assets')
+        copy {
+            from "build/cryo/target/zip"
+            into "${rootDir}/app/src/main/assets"
+        }
+    }
+}
+
+// 编译插件zip到插件下载目录
+task buildZipToPluginDownloadFile(dependsOn: ['buildZip']) {
+    doLast {
+        String applicationId = build.applicationId
+        println("applicationId=$applicationId")
+        String zipName = "${project.name}.zip"
+        String dstDecompressedDirectory = "/sdcard/Android/data/${applicationId}/files/download"
+        String dstZipFilePath = "${dstDecompressedDirectory}/$zipName"
+        // 首先删除文件
+        String commandDelFile = "adb shell rm -rf $dstZipFilePath"
+        exec {
+            workingDir 'build'
+            commandLine 'sh', '-c', commandDelFile
+        }
+        // push文件
+        String commandPush = "adb push cryo/target/zip/$zipName $dstZipFilePath"
+        println("command:$commandPush")
+        exec {
+            workingDir 'build'
+            commandLine 'sh', '-c', commandPush
+        }
+    }
+}
+
+import java.security.MessageDigest
+def calculateMD5(File file) {
+    MessageDigest digest = MessageDigest.getInstance("MD5")
+    file.eachByte(4096) { buffer, length ->
+        digest.update(buffer, 0, length)
+    }
+    return digest.digest().encodeHex().toString()
+}
+def calculateSHA256(File file) {
+    MessageDigest digest = MessageDigest.getInstance("SHA-256")
+    file.eachByte(4096) { buffer, length ->
+        digest.update(buffer, 0, length)
+    }
+    return digest.digest().encodeHex().toString()
+}

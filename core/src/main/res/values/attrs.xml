@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Component">
+        <attr name="plugin_id" format="string" />
+        <attr name="plugin_version" format="integer" />
+        <attr name="component_name" format="string" />
+    </declare-styleable>
+</resources>
