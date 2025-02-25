@@ -16,16 +16,3 @@ dependencies {
     implementation 'com.squareup:javapoet:1.13.0'
     implementation project(':annotation')
 }
-
-task createJar(type: Jar) {
-    archiveBaseName = 'compiler' // JAR 包的名字
-    from sourceSets.main.output // 包含编译后的 class 文件
-}
-
-artifacts {
-    archives createJar
-}
-
-tasks.named('generateMetadataFileForAnnotationPublication') {
-    dependsOn('createJar')
-}

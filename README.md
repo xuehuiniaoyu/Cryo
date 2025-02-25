@@ -40,21 +40,21 @@ buildZipToPluginDownloadFile 编译后将文件发送到插件下载目录（需
 注意：插件包编译完成后成以下结构：
  ```
  build
- 	cryo
-		dex
-			classes.dex
-		hash
-			md5.txt
-			sha256.txt
-		libs
-			main.jar
-		target
-			zip
-				plugin1.zip
-			plugin.conf
-			source.dex
-		build.sh
-		plugin.conf
+   cryo
+     dex
+       classes.dex
+     hash
+       md5.txt
+       sha256.txt
+     libs
+       main.jar
+     target
+       zip
+         plugin1.zip
+       plugin.conf
+       source.dex
+     build.sh
+     plugin.conf
  ```
 build/cryo/target/xxx.zip 为插件包，可用CyInstaller安装
 build/cryo/hash/sha256.txt 是插件包的唯一证书，用于校验
@@ -66,3 +66,28 @@ build/cryo/hash/sha256.txt 是插件包的唯一证书，用于校验
 
 Component作为载体，通过继承CyComponent，加注解@Component实现自定义
 View作为显示但愿，通过继承CyView实现自定义
+
+#### 4. 组件化示例代码
+```
+@Component("component2")
+class Component2(view: ViewGroup) : CyComponent(view) {
+    override fun onCreate(args: Bundle?) {
+        super.onCreate(args)
+        CyLayout(context).setWidth(100, "%").setHeight(50, "%").setBackgroundColor(Color.RED).build {
+            // 底部栏
+            CyStack(this).setWidth(100, "%").setId("bottomTab").setDirection(Stack.DIRECTION_H).setHeight(45, "dp").setBackgroundColor(
+                Color.GRAY).setBottom(null).build {
+                CyText(this).setWidth(33.3F, "%").setHeight(100, "%").setGravity(Gravity.CENTER).setText("tab1").build().setOnClick { onBindValueChanged("onTabChanged", "tab1") }
+                CyText(this).setWidth(33.3F, "%").setHeight(100, "%").setGravity(Gravity.CENTER).setText("tab2").build().setOnClick { onBindValueChanged("onTabChanged", "tab2") }
+                CyText(this).setWidth(33.3F, "%").setHeight(100, "%").setGravity(Gravity.CENTER).setText("tab3").build().setOnClick { onBindValueChanged("onTabChanged", "tab3") }
+            }
+            // 内容
+            CyLayout(this).setAbove("bottomTab").setTop(null).setWidth(100, "%").setHeight(0).build {
+                CyComponentLoader.get(lifecycleOwner).load("component3", args).into(this.view)
+            }
+        }.useView {
+            setContentView(it)
+        }
+    }
+}
+```
