@@ -50,6 +50,13 @@ dependencies {
     androidTestImplementation libs.androidx.espresso.core
 }
 ```
+如果只想使用组件化功能不使用动态插件化，只需引入sdk即可
+```
+implementation 'com.github.xuehuiniaoyu:Cryo:latest.release'
+kapt "com.github.xuehuiniaoyu:Cryo:latest.release"
+implementation 'org.hjson:hjson:3.0.0'
+implementation 'com.github.bumptech.glide:glide:4.11.0'
+```
 #### 3. 插件包如何编译
 ##### 右侧Gradle中找到对应模块/Tasks/Other/
 * buildZip 编译插件zip，会在模块下build/cryo目录
