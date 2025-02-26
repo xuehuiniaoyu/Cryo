@@ -48,12 +48,12 @@ class Component1(view: ViewGroup) : CyComponent(view) {
             }
 
             CyVScroller(this).build {
-                CyStack(context).setMargin(top = 100).setDirection(Stack.DIRECTION_V).build {
+                CyStack(this).setMargin(top = 100).setDirection(Stack.DIRECTION_V).build {
                     for(i in 0 .. 50) {
                         CyText(this).setWidth(200).setText("world$i").setBackgroundColor(Color.BLUE)
                             .build()
                     }
-                }.build().useView(add)
+                }
             }
 
             CyImage(this).setBackgroundColor(Color.GRAY).setWidth(100).setHeight(100)

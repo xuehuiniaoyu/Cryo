@@ -74,8 +74,9 @@ class CyInstaller(context: Context) {
 
 
 
-        private fun getPluginDexSha256(pluginId: String, callback: (Context, String) -> Unit) {
+        private fun getPluginDexSha256(pluginId: String, callback: (String?) -> Unit) {
             pluginDexSha256Interface?.getPluginDexSha256(pluginId, callback)
+                ?: callback(null)
         }
 
         private fun checkSha256(pluginFile: File, sha256: String?) {
@@ -169,7 +170,7 @@ class CyInstaller(context: Context) {
 
     fun loadPlugins(vararg pluginIds: String) {
         (pluginIds.takeIf { it.isNotEmpty() }?.asList() ?: getPlugins()).forEach { pluginId ->
-            getPluginDexSha256(pluginId) { context, sha256 ->
+            getPluginDexSha256(pluginId) { sha256 ->
                 // dex证书校验
                 val dexFile = File(pluginWorkspace, "${pluginId}/source.dex")
                 if (dexFile.exists()) {
@@ -183,5 +184,5 @@ class CyInstaller(context: Context) {
 }
 
 interface PluginDexSha256Interface {
-    fun getPluginDexSha256(pluginId: String, callback: (Context, String) -> Unit)
+    fun getPluginDexSha256(pluginId: String, callback: (String) -> Unit)
 }

@@ -3,6 +3,7 @@ package com.cryo.core.component
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -16,6 +17,7 @@ import com.bumptech.glide.GlideBuilder
 import com.cryo.core.COMMON
 import com.cryo.core.delegate.CyLayout
 import com.cryo.core.delegate.CyText
+import com.cryo.core.delegate.CyVScroller
 import org.hjson.JsonObject
 import org.hjson.JsonValue
 import java.io.BufferedReader
@@ -94,9 +96,12 @@ class CyComponentLoader: ViewModel() {
             val instance = object: CyComponent(ConstraintLayout(context)) {
                 override fun onCreate(args: Bundle?) {
                     super.onCreate(args)
-                    CyLayout(context).setWidth(0).setHeight(0).setCenterInParent().build {
-                        CyText(this).setText("插件：${pluginId}加载异常!").setCenterInParent().setTextColor(
-                            Color.RED).setTextSize(14, "dp").build()
+                    CyLayout(context).setFillParent().build {
+                        val exception = Log.getStackTraceString(ex)
+                        CyVScroller(this).build {
+                            CyText(this).setText("插件：${pluginId}加载异常!\n$exception").setCenterInParent().setTextColor(
+                                Color.RED).setTextSize(14, "dp").build()
+                        }
                     }.useView(setContentView)
                 }
             }

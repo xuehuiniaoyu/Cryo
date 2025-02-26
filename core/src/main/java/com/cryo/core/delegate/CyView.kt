@@ -39,7 +39,6 @@ abstract class CyView<out T : CyView<T>> {
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view)
         view.layoutParams = layoutParams
-//        view.requestLayout()
         return this as T
     }
 
@@ -200,6 +199,22 @@ abstract class CyView<out T : CyView<T>> {
         layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID
         layoutParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+        return this as T
+    }
+
+    fun setFillParent(): T {
+        layoutParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+        layoutParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT
+        return this as T
+    }
+
+    fun setWidthFillParent(): T {
+        layoutParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+        return this as T
+    }
+
+    fun setHeightFillParent(): T {
+        layoutParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT
         return this as T
     }
     fun setOnClick(listener: T.() -> Unit) : T {
