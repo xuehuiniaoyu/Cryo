@@ -8,14 +8,14 @@
 * plugin1 是一个示例插件包
 
 #### 2. 如何集成？
-##### 最简单的集成（不使用动态插件功能），在build.gradle中引入SDK即可
+##### 1. 最简单的集成（不使用动态插件功能），在build.gradle中引入SDK即可
 ```
 implementation 'com.github.xuehuiniaoyu:Cryo:latest.release'
 kapt "com.github.xuehuiniaoyu:Cryo:latest.release"
 implementation 'org.hjson:hjson:3.0.0'
 implementation 'com.github.bumptech.glide:glide:4.11.0'
 ```
-##### 使用动态插件功能
+##### 2. 使用动态插件功能
 1. 在setting.gradle中配置开源仓库
 ```
 repositories {
