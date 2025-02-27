@@ -1,4 +1,4 @@
-# Cryo（Android插件化框架）
+# Cryo（Android插件化&组件化框架）
 
 (android 动态框架)
 [配置文件 hjson](http://hjson.org/)
