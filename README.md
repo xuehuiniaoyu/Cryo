@@ -1,8 +1,5 @@
 # Cryo（Android插件化&组件化框架）
 
-(android 动态框架)
-[配置文件 hjson](http://hjson.org/)
-
 ####  1. 项目介绍
 * app 示例
 * core 核心包
